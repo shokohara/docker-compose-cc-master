@@ -1,0 +1,37 @@
+version: '2'
+services:
+  fluentd:
+    image: fluent/fluentd
+    ports:
+      - "24224:24224"
+    volumes:
+      - "data-fluentd:/fluentd/log"
+#  consul:
+#    image: progrium/consul
+#    ports:
+#      - "8300-8301:8300-8301"
+#    command: -server -bootstrap
+#    logging:
+#      driver: fluentd
+#      options:
+#        fluentd-address: localhost:24224
+  swarm:
+    image: swarm
+    ports:
+      - "4000:4000"
+    command: join --advertise=192.168.33.13:2375 consul://192.168.33.11:8500
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+volumes:
+  data-fluentd:
+    driver: local
